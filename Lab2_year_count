@@ -18,7 +18,7 @@ inputs:
       - "2019"
       - "2020"
       - "2021"
-    defaults: "2019"
+    defaults: "2021"
 
 tasks:
   - id: download_and_sum
@@ -29,19 +29,34 @@ tasks:
     commands:
       - |
         set -e
-        # Устанавливаем curl, так как он отсутствует в базовом образе alpine
-        apk add --no-cache curl
+        # Устанавливаем curl и coreutils (для утилиты od)
+        apk add --no-cache curl coreutils
         total=0
-        # Перебираем месяцы явно, чтобы избежать проблем с brace expansion
+        # Перебираем месяцы явно
         for month in 01 02 03 04 05 06 07 08 09 10 11 12; do
           file="{{ inputs.taxi }}_tripdata_{{ inputs.year }}-${month}.csv"
           echo "Downloading file: $file" >&2
-          # Скачиваем архив с GitHub, распаковываем и сохраняем как файл
-          curl -sL "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{ inputs.taxi }}/$file.gz" | gunzip > "$file"
+          tmpfile=$(mktemp)
+          # Используем curl с -f: если файл не найден или произошла ошибка, переходим к следующему месяцу
+          if ! curl -sLf "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{ inputs.taxi }}/$file.gz" -o "$tmpfile"; then
+              echo "File not found or failed to download: $file.gz" >&2
+              rm "$tmpfile"
+              continue
+          fi
+          # Проверяем первые 2 байта файла (ожидаем gzip magic number: 1f8b)
+          magic=$(head -c2 "$tmpfile" | od -An -tx1 | tr -d ' ')
+          if [ "$magic" = "1f8b" ]; then
+              echo "File $file is gzipped, decompressing..." >&2
+              gunzip -c "$tmpfile" > "$file"
+          else
+              echo "File $file is not gzipped, saving as-is..." >&2
+              cp "$tmpfile" "$file"
+          fi
+          rm "$tmpfile"
           # Считаем количество строк без заголовка (начиная со второй строки)
           count=$(tail -n +2 "$file" | wc -l)
           echo "Count for $file: $count" >&2
           total=$(( total + count ))
         done
-        # Итоговая сумма записывается в файл result.txt, который затем захватывается как output
+        # Итоговая сумма записывается в файл result.txt
         echo $total > result.txt
