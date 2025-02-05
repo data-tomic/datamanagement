@@ -49,12 +49,7 @@ services:
             driverClassName: org.postgresql.Driver
             username: kestra
             password: k3str4
-          # Подключение к внешней базе данных (postgres-db)
-          external:
-            url: jdbc:postgresql://postgres-db:5432/postgres-zoomcamp
-            driverClassName: org.postgresql.Driver
-            username: kestra
-            password: k3str4
+
         kestra:
           server:
             url: http://localhost:8080/
