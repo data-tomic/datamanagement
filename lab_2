@@ -1,1 +1,49 @@
+Порядок запуска
+Создаём my-network (если её ещё нет):
 
+
+docker network create my-network
+Запускаем внешнюю БД (postgres-db):
+
+
+docker compose -f postgres-compose.yml up -d
+Проверяем, что контейнер запущен:
+
+
+docker ps
+Запускаем Kestra (kestra + kestra-postgres):
+
+
+docker compose -f kestra-compose.yml up -d
+Проверяем:
+
+
+docker ps
+Проверяем соединение
+Проверяем сеть my-network:
+
+
+docker network inspect my-network
+Должны быть:
+
+
+"Containers": {
+    "kestra": {...},
+    "postgres-db": {...}
+}
+Проверяем соединение из контейнера Kestra к postgres-db:
+
+
+docker exec -it kestra sh
+Внутри контейнера выполните:
+
+sh
+ping postgres-db
+Если ответ есть – всё работает!
+
+Проверяем соединение через psql:
+
+sh
+
+psql -h postgres-db -U kestra -d postgres-zoomcamp
+Если соединение успешно – Kestra теперь может использовать postgres-db!
