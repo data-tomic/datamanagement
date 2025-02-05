@@ -1,6 +1,7 @@
 Questions
 Question 1. File size (1 point)
-128.3 MB
+Within the execution for Yellow Taxi data for the year 2020 and month 12: what is the uncompressed file size (i.e. the output file yellow_tripdata_2020-12.csv of the extract task)?
+128.3 MB *
 134.5 MB
 364.7 MB
 692.6 MB
@@ -13,8 +14,9 @@ green_tripdata_04_2020.csv
 green_tripdata_2020.csv
 
 Question 3. Number of rows (yellow, 2020) (1 point)
+How many rows are there for the Yellow Taxi data for all CSV files in the year 2020?
 13,537,299
-24,648,499
+24,648,499 * 24648499
 18,324,219
 29,430,127
 
@@ -26,10 +28,10 @@ Question 4. Number of rows (green, 2020) (1 point)
 1,342,034
 
 Question 5. Number of rows (yellow, March 2021) (1 point)
-1,428,092
+1,428,092 * 15000700
 706,911
 1,925,152
-2,561,031 * 24648499
+2,561,031 
 
 Question 6. Timezone for trigger (1 point)
 
