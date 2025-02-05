@@ -1,36 +1,172 @@
 Порядок запуска
 Создаём my-network (если её ещё нет):
-
-
 docker network create my-network
+
+$ docker network create my-network
+93e6b3b4678fad22c9461738edcc6e514843980d5e8631198dd025a2ec1dd291
+
+
 Запускаем внешнюю БД (postgres-db):
-
-
 docker compose -f postgres-compose.yml up -d
+
+$ docker compose -f postgres-compose.yml up -d
+WARN[0000] /home/serg/lab_2/postgres-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+[+] Running 15/15
+ ✔ postgres-db Pulled                                                                                 36.0s
+   ✔ c29f5b76f736 Pull complete                                                                        9.5s
+   ✔ f0a9d8a20b55 Pull complete                                                                        9.5s
+   ✔ 9a21b165f71a Pull complete                                                                        9.8s
+   ✔ 3fc477a3cd04 Pull complete                                                                       12.2s
+   ✔ cfafd8bb3e72 Pull complete                                                                       12.9s
+   ✔ c6d3cd6e7746 Pull complete                                                                       13.0s
+   ✔ eb5275734f43 Pull complete                                                                       13.0s
+   ✔ 0307008f950a Pull complete                                                                       13.1s
+   ✔ a0d2dc1de520 Pull complete                                                                       33.3s
+   ✔ 32d6a46b2b6d Pull complete                                                                       33.4s
+   ✔ e12abaa312b3 Pull complete                                                                       33.4s
+   ✔ a97bf08b3792 Pull complete                                                                       33.4s
+   ✔ 17a0070c8a8a Pull complete                                                                       33.4s
+   ✔ 375b183b135f Pull complete                                                                       33.5s
+[+] Running 2/2
+ ✔ Volume "lab_2_postgres-data"  Created                                                               0.0s
+ ✔ Container postgres-db         Started                                                               0.8s
+
 Проверяем, что контейнер запущен:
-
-
 docker ps
+$ docker ps
+CONTAINER ID   IMAGE      COMMAND                  CREATED          STATUS          PORTS
+                    NAMES
+c825288c03c2   postgres   "docker-entrypoint.s…"   11 seconds ago   Up 10 seconds   0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres-db
+
 Запускаем Kestra (kestra + kestra-postgres):
 
-
 docker compose -f kestra-compose.yml up -d
+
+$ docker compose -f kestra-compose.yml up -d
+WARN[0000] /home/serg/lab_2/kestra-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion
+[+] Running 10/10
+ ✔ kestra Pulled                                                                                     308.7s
+   ✔ 9cb31e2e37ea Pull complete                                                                        9.7s
+   ✔ 9b2b8e353eff Pull complete                                                                       11.4s
+   ✔ 379395aa081f Pull complete                                                                       14.4s
+   ✔ 298e1b6de866 Pull complete                                                                       14.5s
+   ✔ ea28f6f7f0aa Pull complete                                                                       14.5s
+   ✔ 591b563014ff Pull complete                                                                       14.5s
+   ✔ 4ecf3ed179ee Pull complete                                                                       14.6s
+   ✔ 22eba9ea9255 Pull complete                                                                       30.6s
+   ✔ cd86d9e07acb Pull complete                                                                      306.2s
+[+] Running 0/1
+ ⠙ Network lab_2_internal  Creating                                                                    0.2s
+
+
+
 Проверяем:
-
-
 docker ps
+
+$ docker ps
+CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS                   PORTS
+                            NAMES
+c76c32b9f5b0   postgres   "docker-entrypoint.s…"   3 minutes ago   Up 3 minutes (healthy)   5432/tcp                                    kestra-postgres
+c825288c03c2   postgres   "docker-entrypoint.s…"   8 minutes ago   Up 8 minutes             0.0.0.0:5432->5432/tcp, :::5432->5432/tcp   postgres-db
+
+
 Проверяем соединение
 Проверяем сеть my-network:
-
-
 docker network inspect my-network
 Должны быть:
-
-
 "Containers": {
     "kestra": {...},
     "postgres-db": {...}
 }
+
+$ docker network inspect my-network
+[
+    {
+        "Name": "my-network",
+        "Id": "93e6b3b4678fad22c9461738edcc6e514843980d5e8631198dd025a2ec1dd291",
+        "Created": "2025-02-05T16:11:07.410357755+03:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "c825288c03c21fb9810d348b321adc431edee72a2d7298b1e178da8add92a67f": {
+                "Name": "postgres-db",
+                "EndpointID": "40ed5d320b0c8676385de6dc52f2945e754f885874112a38ac467f0aa82179d5",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+
+$ docker network connect my-network kestra-postgres
+$ docker network inspect my-network
+[
+    {
+        "Name": "my-network",
+        "Id": "93e6b3b4678fad22c9461738edcc6e514843980d5e8631198dd025a2ec1dd291",
+        "Created": "2025-02-05T16:11:07.410357755+03:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {
+            "c76c32b9f5b0ce9d0fa8b5c19ef8945d94afd82a31e8ec30f093564fe7a556ac": {
+                "Name": "kestra-postgres",
+                "EndpointID": "10de3d2623064c7d91fa06800871198fa8b73c090927c6937e2b9e9dc98af9cf",
+                "MacAddress": "02:42:ac:12:00:03",
+                "IPv4Address": "172.18.0.3/16",
+                "IPv6Address": ""
+            },
+            "c825288c03c21fb9810d348b321adc431edee72a2d7298b1e178da8add92a67f": {
+                "Name": "postgres-db",
+                "EndpointID": "40ed5d320b0c8676385de6dc52f2945e754f885874112a38ac467f0aa82179d5",
+                "MacAddress": "02:42:ac:12:00:02",
+                "IPv4Address": "172.18.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {},
+        "Labels": {}
+    }
+]
+
 Проверяем соединение из контейнера Kestra к postgres-db:
 
 
@@ -43,7 +179,46 @@ ping postgres-db
 
 Проверяем соединение через psql:
 
-sh
+$ sudo apt-get install -y postgresql-client
+[sudo] password for serg:
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  libpq5 postgresql-client-16 postgresql-client-common
+Suggested packages:
+  postgresql-16 postgresql-doc-16
+The following NEW packages will be installed:
+  libpq5 postgresql-client postgresql-client-16 postgresql-client-common
+0 upgraded, 4 newly installed, 0 to remove and 72 not upgraded.
+Need to get 1460 kB of archives.
+After this operation, 4682 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpq5 amd64 16.6-0ubuntu0.24.04.1 [141 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client-common all 257build1.1 [36.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client-16 amd64 16.6-0ubuntu0.24.04.1 [1271 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 postgresql-client all 16+257build1.1 [11.6 kB]
+Fetched 1460 kB in 2s (815 kB/s)
+Selecting previously unselected package libpq5:amd64.
+(Reading database ... 41334 files and directories currently installed.)
+Preparing to unpack .../libpq5_16.6-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking libpq5:amd64 (16.6-0ubuntu0.24.04.1) ...
+Selecting previously unselected package postgresql-client-common.
+Preparing to unpack .../postgresql-client-common_257build1.1_all.deb ...
+Unpacking postgresql-client-common (257build1.1) ...
+Selecting previously unselected package postgresql-client-16.
+Preparing to unpack .../postgresql-client-16_16.6-0ubuntu0.24.04.1_amd64.deb ...
+Unpacking postgresql-client-16 (16.6-0ubuntu0.24.04.1) ...
+Selecting previously unselected package postgresql-client.
+Preparing to unpack .../postgresql-client_16+257build1.1_all.deb ...
+Unpacking postgresql-client (16+257build1.1) ...
+Setting up postgresql-client-common (257build1.1) ...
+Setting up libpq5:amd64 (16.6-0ubuntu0.24.04.1) ...
+Setting up postgresql-client-16 (16.6-0ubuntu0.24.04.1) ...
+update-alternatives: using /usr/share/postgresql/16/man/man1/psql.1.gz to provide /usr/share/man/man1/psql.1.gz (psql.1.gz) in auto mode
+Setting up postgresql-client (16+257build1.1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+
 
 psql -h postgres-db -U kestra -d postgres-zoomcamp
 Если соединение успешно – Kestra теперь может использовать postgres-db!
