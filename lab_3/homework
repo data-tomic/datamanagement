@@ -14,7 +14,7 @@ WHERE EXTRACT(YEAR FROM tpep_pickup_datetime) = 2024;
 
 65,623
 840,402
-20,332,093
+20,332,093 *
 85,431,289
 
 
