@@ -27,20 +27,31 @@ What is the estimated amount of data that will be read when this query is execut
 0 MB for the External Table and 155.12 MB for the Materialized Table
 2.14 GB for the External Table and 0MB for the Materialized Table
 0 MB for the External Table and 0MB for the Materialized Table
+
+
 Question 3:
 Write a query to retrieve the PULocationID from the table (not the external table) in BigQuery. Now write a query to retrieve the PULocationID and DOLocationID on the same table. Why are the estimated number of Bytes different?
-
 BigQuery is a columnar database, and it only scans the specific columns requested in the query. Querying two columns (PULocationID, DOLocationID) requires reading more data than querying one column (PULocationID), leading to a higher estimated number of bytes processed.
 BigQuery duplicates data across multiple storage partitions, so selecting two columns instead of one requires scanning the table twice, doubling the estimated bytes processed.
 BigQuery automatically caches the first queried column, so adding a second column increases processing time but does not affect the estimated bytes scanned.
 When selecting multiple columns, BigQuery performs an implicit join operation between them, increasing the estimated bytes processed
+
+SELECT
+  COUNT(*) AS zero_fare_count
+FROM
+  `your_project.your_dataset.trips`
+WHERE
+  fare_amount = 0;
+
+8333
+
 Question 4:
 How many records have a fare_amount of 0?
 
 128,210
 546,578
 20,188,016
-8,333
+8,333 *
 Question 5:
 What is the best strategy to make an optimized table in Big Query if your query will always filter based on tpep_dropoff_datetime and order the results by VendorID (Create a new table with this strategy)
 
