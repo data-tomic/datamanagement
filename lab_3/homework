@@ -20,6 +20,27 @@ WHERE EXTRACT(YEAR FROM tpep_pickup_datetime) = 2024;
 
 
 Question 2:
+
+
+CREATE OR REPLACE TABLE `my-ny-taxy.taxi.materialized_yellow_taxi` AS
+SELECT *
+FROM `my-ny-taxy.taxi.external_taxi_table`;
+
+
+
+SELECT COUNT(*) AS record_count
+FROM `my-ny-taxy.taxi.materialized_yellow_taxi`;
+
+Внешняя таблица:
+
+Запрос возвращает 20,332,093 записей.
+BigQuery оценивает объем данных, считываемых при запросе, примерно в 18.82 MB.
+Материализованная таблица:
+
+Запрос возвращает такое же количество записей (20,332,093).
+При выполнении запроса оценка обработанных байт составляет около 47.60 MB.
+
+
 Write a query to count the distinct number of PULocationIDs for the entire dataset on both the tables.
 What is the estimated amount of data that will be read when this query is executed on the External Table and the Table?
 
